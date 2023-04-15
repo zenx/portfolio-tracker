@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Orders{% endblock %}
+
+{% block content %}
+  <h1>Orders</h1>
+  
+  {% for order in orders %}
+    <div class="order {{ order.order_type }}">
+      <h4>{{ order.day }}</h4>
+      {% if order.order_type == 'BUY' %}Bought{% else %}Sold{% endif %}
+      {{ order.amount }} <strong>{{ order.asset.ticker }}</strong> shares at ${{ order.price }}<br>
+      Order value: ${{ order.get_total }}
+    </div>
+  {% endfor %}
+
+{% endblock %}
+   

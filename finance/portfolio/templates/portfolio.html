@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Developers{% endblock %}
+
+{% block content %}
+  <h1>My portfolio</h1>
+
+  <div class="box">
+    Portfolio valuation: <br>
+    <div>${{ portfolio_value }}</div>
+  </div>
+
+  <div class="box">
+    Invested: <br>
+    <div>${{ portfolio_invested|floatformat:2 }}</div>
+  </div>
+
+  <div class="box">
+    Unrealised gains: <br>
+    <div class="{% if portfolio_unrealised_gains < 0 %}red{% else %}green{% endif %}">
+      ${{ portfolio_unrealised_gains|floatformat:2 }}
+    </div>
+  </div>
+
+  <div style="width:260px; height:380px">
+    <canvas id="portfolio-chart"></canvas>
+  </div>
+  
+
+  <h2>Positions</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Ticker</th>
+        <th>Asset</th>
+        <th>Amount</th>
+        <th>Price</th>
+        <th>Valuation</th>
+         <th>Unrealised gains</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for position in positions %}
+      <tr>
+        <td>{{ position.asset.ticker }}</td>
+        <td>{{ position.asset.name }}</td>
+        <td class="num">{{ position.amount }}</td>
+        <td class="num">${{ position.price }}</td>
+        <td class="num">${{ position.valuation }}</td>
+        <td class="num">${{ position.unrealised_gains|floatformat:2 }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const ctx = document.getElementById('portfolio-chart');
+  
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: [{% for position in positions %}'{{ position.asset.ticker }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+          data: [{% for position in positions %}{{ position.valuation }}{% if not forloop.last %},{% endif %}{% endfor %}],
+          borderWidth: 1
+        }]
+      }
+    });
+  </script>
+{% endblock %}
