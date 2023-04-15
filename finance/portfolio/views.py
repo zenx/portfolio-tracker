@@ -12,19 +12,18 @@ from portfolio.forms import OrderForm
 
 
 def portfolio(request):
-    orders = Order.objects.all()
-
     # retrieve portfolio assets
     asset_ids = Order.objects.values_list('asset_id', flat=True).distinct()
     assets = Asset.objects.filter(id__in=asset_ids)
 
+    # initialize portfolio data
     positions =  []
-
     portfolio_value = Decimal('0')
     portfolio_unrealised_gains = Decimal('0')
     portfolio_invested = Decimal('0')
 
     for asset in assets:
+        # retrieve buy / sell orders for each asset
         buy_orders = asset.orders.filter(order_type=Order.BUY)
         sell_orders = asset.orders.filter(order_type=Order.SELL)
         
@@ -34,12 +33,12 @@ def portfolio(request):
         sell_data = sell_orders.aggregate(total_amount=Sum('amount'),
                                           total_value=Sum(F('price') * F('amount')))
         
-        # calculate remaining amount after buys / sells
+        # calculate remaining amount after buy / sell orders
         amount_bought = buy_data['total_amount'] or 0
         amount_sold = sell_data['total_amount'] or 0
         current_amount = amount_bought - amount_sold
 
-        # calculate the total cost of all buys / sells
+        # calculate the total cost of all buy / sell orders
         value_bought = buy_data['total_value'] or 0
         value_sold = sell_data['total_value'] or 0
         
@@ -64,8 +63,6 @@ def portfolio(request):
         portfolio_unrealised_gains += unrealised_gains
         portfolio_invested += value_bought - value_sold
     
-    #portfolio_invested = portfolio_value - portfolio_unrealised_gains
-
     return render(request, 'portfolio.html', locals())
 
 
