@@ -26,13 +26,13 @@ def portfolio(request):
         # retrieve buy / sell orders for each asset
         buy_orders = asset.orders.filter(order_type=Order.BUY)
         sell_orders = asset.orders.filter(order_type=Order.SELL)
-        
+
         buy_data = buy_orders.aggregate(total_amount=Sum('amount'),
                                         total_value=Sum(F('price') * F('amount')))
-        
+
         sell_data = sell_orders.aggregate(total_amount=Sum('amount'),
                                           total_value=Sum(F('price') * F('amount')))
-        
+
         # calculate remaining amount after buy / sell orders
         amount_bought = buy_data['total_amount'] or 0
         amount_sold = sell_data['total_amount'] or 0
@@ -41,7 +41,7 @@ def portfolio(request):
         # calculate the total cost of all buy / sell orders
         value_bought = buy_data['total_value'] or 0
         value_sold = sell_data['total_value'] or 0
-        
+
         # calculate the current valuation
         last_price = asset.prices.latest('day')
         current_valuation = current_amount * last_price.price
@@ -62,7 +62,7 @@ def portfolio(request):
         portfolio_value += current_valuation
         portfolio_unrealised_gains += unrealised_gains
         portfolio_invested += value_bought - value_sold
-    
+
     return render(request, 'portfolio.html', locals())
 
 
@@ -76,6 +76,7 @@ def order_create(request):
     if request.method == 'POST':
         form = OrderForm(request.POST)
         if form.is_valid():
-            order = form.save()
+            # save the new order to the database
+            form.save()
             return redirect('portfolio')
     return render(request, 'order/create.html', {'form': form})

@@ -14,6 +14,7 @@ class Asset(models.Model):
         return f'{self.ticker} - {self.name}'
 
 
+
 class Price(models.Model):
     asset = models.ForeignKey(Asset,
                               related_name='prices',
@@ -26,6 +27,9 @@ class Price(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['asset', 'day'], name='asset-day')
         ]
+
+    def __str__(self):
+        return f'Price for {self.asset.ticker} on {self.day}'
 
 
 class Order(models.Model):
@@ -44,9 +48,12 @@ class Order(models.Model):
     day = models.DateField(default=datetime.date.today)
     order_type = models.CharField(max_length=4, choices=ORDER_TYPE_CHOICES, default=BUY)
 
-    def get_total(self):
+    def __str__(self):
+        return f'{self.order_type} order for {self.asset.ticker} on {self.day}'
+
+    @property
+    def total(self):
         total = self.price * self.amount
         if self.order_type == Order.SELL:
             total *= -1
         return total
-    
